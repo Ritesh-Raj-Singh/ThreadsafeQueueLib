@@ -15,12 +15,12 @@ template <typename T> class lockfree_spsc_unbounded {
   // Note that the next pointers are atomic there. Why ?? [Reason this]
   //--------------------My understanding:------------------
   //if head and tail point to same stub node ,sp in trying to modify next ptr,sc is trying to read
-  // next ptr(to check if queue is empty)
+  // next ptr(to check if queue is empty)->race condition
 
   // Also the head and tail members are cache-aligned. Why ?? [Reason this] (ask
   // me for details)
   //-------------------My understanding:-------------------
-  //cpu update on common cache line,if sp makes some changes,in invalidates other cores cache,so this has to keep on updating
+  //cpu update on common cache line,if sp makes some changes,in invalidates other cores(sc) cache,so this has to keep on updating
   //which is time consuming
   //cache aligning make the pointers sit on different cache lines,so now we can spam modifications(very latent)
 
@@ -44,7 +44,7 @@ private:
 
   //------------------Note:--------------------
   //we do not need atomic head/tail due to spsc
-  //doing cache align so that head and tail are in different caches
+  //doing cache align so that head and tail are in different cache lines
   //we do not use shared pointers due to reference counter bottlneck-we are keeping the pointers light weight
 
   alignas(tsfq::__impl::cache_line_size)node * head;
@@ -75,24 +75,41 @@ public:
       node* current=head;
       head=head->next.load(std::memory_order_relaxed);
       delete current;
-      
+
     }
   }
 
 
   // 1. void push(value) : Pushes the value inside the queue, copies the value
+  void push(T);
+
   // 2. void wait_and_pop(value ref) : Blocking wait on queue, returns value in
   // the reference passed as parameter
+  void wait_and_pop(T&);
+
   // 3. bool try_pop(value ref) : Returns true and
   // gives the value in reference passed, false otherwise
+  bool try_pop(T&);
+
   // 4. bool empty() : Returns
   // whether the queue is empty or not at that instant
+  bool empty();
+
   // 5. bool peek(value ref) : Returns the front/top element of queue in ref (false if empty queue)
+  bool peek(T&);
+
   // 6. Add static asserts
+
   // 7. Add emplace_back using perfect forwarding and variadic templates (you
   // can use this in push then)
+  template<typename... Args>
+  void emplace_back(Args&&... args);
+
   // 8. Add size() function
+  int size();
+
   // 9. Any more suggestions ??
+
   // 10. Why no shared_ptr ?? [Reason this]
 };
 } // namespace tsfqueue::__impl
