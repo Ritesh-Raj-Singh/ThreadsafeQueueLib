@@ -30,6 +30,16 @@ template <typename T> bool queue<T>::try_pop(T &value) {
 
 template <typename T> void queue<T>::wait_and_pop(T &value) {
     
+    head->next.wait(nullptr,std::memory_order_acquire);
+
+    node* new_head = head->next.load(std::memory_order_relaxed);
+    node* old_head = head;
+    value = std::move(head->data);
+    
+    head = new_head;
+
+    delete old_head;
+    
 }
 
 template <typename T> bool queue<T>::peek(T &value) {
@@ -37,7 +47,7 @@ template <typename T> bool queue<T>::peek(T &value) {
 }
 
 template <typename T> bool queue<T>::empty(void) {
-
+    return (head->next.load(std::memory_order_acquire)==nullptr);
 }
 
 template<typename T>
@@ -49,7 +59,15 @@ void queue<T>::emplace_back(Args&&... args){
         tail->data = T(std::forward<Args>(args)...);
         tail->next.store(stub,std::memory_order_release);
 
+        //wakes up any sleeping thread
+        tail->next.notify_one();
+
         tail = stub;
+}
+
+template<typename T>
+int64_t queue<T>::size(){
+
 }
 
 #endif
