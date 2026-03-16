@@ -3,16 +3,19 @@
 
     #include "defs.hpp"
 
+    //----------------------------------------
+    //compiler was not able to find defintions using this alias
+    // template <typename T>
+    // using queue = tsfqueue::__impl::lockfree_spsc_unbounded<T>;
+    //----------------------------------------
 
-    template <typename T>
-    using queue = tsfqueue::__impl::lockfree_spsc_unbounded<T>;
 
-    template <typename T> void queue<T>::push(T value) {
+    template <typename T> void tsfqueue::__impl::lockfree_spsc_unbounded<T>::push(T value) {
         //std::move casts it as rvalue-no cost of copying
         emplace_back(std::move(value));
     }
 
-    template <typename T> bool queue<T>::try_pop(T &value) {    
+    template <typename T> bool tsfqueue::__impl::lockfree_spsc_unbounded<T>::try_pop(T &value) {    
         node* new_head = head->next.load(std::memory_order_acquire);
 
         if(new_head == nullptr){
@@ -30,9 +33,11 @@
         return true;
     }   
 
-    template <typename T> void queue<T>::wait_and_pop(T &value) {
+    template <typename T> void tsfqueue::__impl::lockfree_spsc_unbounded<T>::wait_and_pop(T &value) {
         
-        head->next.wait(nullptr,std::memory_order_acquire);
+        while(head->next.load(std::memory_order_acquire) == nullptr){
+            std::this_thread::yield();//low latency-high cpu usage
+        }
 
         node* new_head = head->next.load(std::memory_order_relaxed);
         node* old_head = head;
@@ -46,7 +51,7 @@
         
     }
 
-    template <typename T> bool queue<T>::peek(T &value) {
+    template <typename T> bool tsfqueue::__impl::lockfree_spsc_unbounded<T>::peek(T &value) {
         if(empty()){
             return false;
         }
@@ -54,13 +59,13 @@
         return true;
     }
 
-    template <typename T> bool queue<T>::empty(void) {
-        return (head->next.load(std::memory_order_acquire)==nullptr);
+    template <typename T> bool tsfqueue::__impl::lockfree_spsc_unbounded<T>::empty(void) {
+        return (head->next.load(std::memory_order_acquire) == nullptr);
     }
 
     template<typename T>
     template<typename... Args>
-    void queue<T>::emplace_back(Args&&... args){
+    void tsfqueue::__impl::lockfree_spsc_unbounded<T>::emplace_back(Args&&... args){
             node* stub = new node();
             stub->next.store(nullptr,std::memory_order_relaxed);
 
@@ -68,14 +73,11 @@
             capacity.fetch_add(1,std::memory_order_relaxed);
             tail->next.store(stub,std::memory_order_release);
 
-            //wakes up one sleeping thread
-            tail->next.notify_one();
-
             tail = stub;
     }
 
     template<typename T>
-    size_t queue<T>::size(){
+    size_t tsfqueue::__impl::lockfree_spsc_unbounded<T>::size(){
         return capacity.load(std::memory_order_relaxed);
     }
 

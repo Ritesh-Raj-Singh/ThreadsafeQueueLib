@@ -60,7 +60,8 @@ private:
   // 2. node* tail -> Pointer to tail node
   // 3. Cache align 1-2
 
-
+  //capacity 
+  alignas(tsfq::__impl::cache_line_size)std::atomic<size_t>capacity {0};
 
 public:
   // Public member functions :
@@ -71,7 +72,7 @@ public:
   //-----------Constructor-------------
   //using memory_order_relaxed because default ordering is memory_order_seq_cst
   lockfree_spsc_unbounded(){
-    node* head= new node();
+    head= new node();
     head->next.store(nullptr,std::memory_order_relaxed);
 
     tail=head;
@@ -93,6 +94,9 @@ public:
 
   lockfree_spsc_unbounded(const lockfree_spsc_unbounded&)=delete;
   lockfree_spsc_unbounded &operator=(const lockfree_spsc_unbounded &)=delete;
+
+  lockfree_spsc_unbounded(lockfree_spsc_unbounded&&) = delete;
+  lockfree_spsc_unbounded &operator=(lockfree_spsc_unbounded&&) = delete;
 
   //---------------------------------------------------------------------------------------------
 
@@ -123,11 +127,12 @@ public:
   void emplace_back(Args&&... args);
 
   // 8. Add size() function
-  int64_t size();
+  size_t size();
 
   // 9. Any more suggestions ??
 
   // 10. Why no shared_ptr ?? [Reason this]
+  //
 };
 } // namespace tsfqueue::__impl
 
