@@ -10,13 +10,16 @@ using queue = tsfqueue::__impl::lockfree_spsc_bounded<T, Capacity>;
 template <typename T, size_t Capacity>
 void queue<T, Capacity>::wait_and_push(T value)
 {
-    while(true){
-    if((tail_cache+1)%Capacity==head_cache){
-      head_cache=head.load();
+  while (true)
+  {
+    if ((tail_cache + 1) % Capacity == head_cache)
+    {
+      head_cache = head.load();
     }
-    else{
-      arr[tail_cache]=value;
-      tail_cache=(tail_cache+1)%Capacity;
+    else
+    {
+      arr[tail_cache] = value;
+      tail_cache = (tail_cache + 1) % Capacity;
       tail.store(tail_cache);
       break;
     }
@@ -26,35 +29,39 @@ void queue<T, Capacity>::wait_and_push(T value)
 template <typename T, size_t Capacity>
 bool queue<T, Capacity>::try_push(T value)
 {
-    return emplace_back(std::move(value));
+  return emplace_back(std::move(value));
 }
 
 template <typename T, size_t Capacity>
 bool queue<T, Capacity>::try_pop(T &value)
 {
-    if (tail_cache == head_cache)
+  if (tail_cache == head_cache)
+  {
+    tail_cache = tail.load(std::memory_order_acquire); // refresh cache
+    if (tail_cache == head_cache)                      // empty
     {
-        tail_cache = tail.load(std::memory_order_acquire); // refresh cache
-        if (tail_cache == head_cache) // empty
-        {
-            return false;
-        }
+      return false;
     }
-    value = arr[head_cache % Capacity];
-    head_cache++;
-    head.store(head_cache, std::memory_order_relaxed);
-    return true;
+  }
+  value = arr[head_cache % Capacity];
+  head_cache++;
+  head.store(head_cache, std::memory_order_relaxed);
+  return true;
 }
 
 template <typename T, size_t Capacity>
-void queue<T, Capacity>::wait_and_pop(T &value) {
-    while(true){
-    if(head_cache==tail_cache){
-      tail_cache=tail.load();
+void queue<T, Capacity>::wait_and_pop(T &value)
+{
+  while (true)
+  {
+    if (head_cache == tail_cache)
+    {
+      tail_cache = tail.load();
     }
-    else{
-      value=arr[head_cache];
-      head_cache=(head_cache+1)%Capacity;
+    else
+    {
+      value = arr[head_cache];
+      head_cache = (head_cache + 1) % Capacity;
       head.store(head_cache);
       break;
     }
@@ -62,35 +69,49 @@ void queue<T, Capacity>::wait_and_pop(T &value) {
 }
 
 template <typename T, size_t Capacity>
-bool queue<T, Capacity>::peek(T &value) {}
-
-template <typename T, size_t Capacity>
-bool queue<T, Capacity>::empty() {}
-
-template <typename T, size_t Capacity>
-template <typename ...Args>
-bool queue<T, Capacity>::emplace_back(Args&&... args)
+bool queue<T, Capacity>::peek(T &value)
 {
-    if (tail_cache - head_cache == Capacity)
-    {
-        head_cache = head.load(std::memory_order_relaxed); // refresh cache
-        if (tail_cache - head_cache == Capacity)           // full
-        {
-            return false;
-        }
-    }
-    arr[tail_cache % Capacity] = T(std::forward<Args>(args)...);
-    tail_cache++;
-    tail.store(tail_cache, std::memory_order_release);
-    return true;
+  size_t cur_head = head.load();
+  if (cur_head == tail_cache)
+  {
+    tail_cache = tail.load();
+    if (tail_cache == head)
+      return false;
+  }
+  value = arr[cur_head];
+  return true;
 }
 
 template <typename T, size_t Capacity>
-size_t queue<T, Capacity>::size() 
+bool queue<T, Capacity>::empty()
 {
-    size_t t = tail.load(std::memory_order_relaxed);
-    size_t h = head.load(std::memory_order_relaxed);
-    return t - h;
+  return head.load() == tail.load();
+}
+
+template <typename T, size_t Capacity>
+template <typename... Args>
+bool queue<T, Capacity>::emplace_back(Args &&...args)
+{
+  if (tail_cache - head_cache == Capacity)
+  {
+    head_cache = head.load(std::memory_order_relaxed); // refresh cache
+    if (tail_cache - head_cache == Capacity)           // full
+    {
+      return false;
+    }
+  }
+  arr[tail_cache % Capacity] = T(std::forward<Args>(args)...);
+  tail_cache++;
+  tail.store(tail_cache, std::memory_order_release);
+  return true;
+}
+
+template <typename T, size_t Capacity>
+size_t queue<T, Capacity>::size()
+{
+  size_t t = tail.load(std::memory_order_relaxed);
+  size_t h = head.load(std::memory_order_relaxed);
+  return t - h;
 }
 
 #endif
