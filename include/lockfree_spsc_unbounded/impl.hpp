@@ -3,14 +3,11 @@
 
     #include "defs.hpp"
 
-    //----------------------------------------
-    //compiler was not able to find defintions using this alias
-    // template <typename T>
-    // using queue = typename tsfqueue::__impl::lockfree_spsc_unbounded<T>;
-    //----------------------------------------
 
-
-    template <typename T> void tsfqueue::__impl::lockfree_spsc_unbounded<T>::push(T value) {
+    template <typename T>
+    using queue = typename tsfqueue::__impl::lockfree_spsc_unbounded<T>;
+ 
+    template <typename T> void queue<T>::push(T value) {
 
         static_assert(std::is_move_constructible_v<T>, 
             "T must be move constructible");
@@ -18,7 +15,7 @@
         emplace_back(std::move(value));
     }
 
-    template <typename T> bool tsfqueue::__impl::lockfree_spsc_unbounded<T>::try_pop(T &value) {  
+    template <typename T> bool queue<T>::try_pop(T &value) {  
 
         static_assert(std::is_nothrow_destructible_v<T>,
                   "T must be nothrow destructible");  
@@ -42,7 +39,7 @@
         return true;
     }   
 
-    template <typename T> void tsfqueue::__impl::lockfree_spsc_unbounded<T>::wait_and_pop(T &value) {
+    template <typename T> void queue<T>::wait_and_pop(T &value) {
 
         static_assert(std::is_nothrow_destructible_v<T>,
             "T must be nothrow destructible"); 
@@ -64,7 +61,7 @@
         
     }
 
-    template <typename T> bool tsfqueue::__impl::lockfree_spsc_unbounded<T>::peek(T &value) {
+    template <typename T> bool queue<T>::peek(T &value) {
 
         static_assert(std::is_copy_assignable_v<T>, 
                 "T must be copy-assignable");
@@ -77,13 +74,13 @@
         return true;
     }
 
-    template <typename T> bool tsfqueue::__impl::lockfree_spsc_unbounded<T>::empty(void) {
+    template <typename T> bool queue<T>::empty(void) {
         return (head->next.load(std::memory_order_acquire) == nullptr);
     }
 
     template<typename T>
     template<typename... Args>
-    void tsfqueue::__impl::lockfree_spsc_unbounded<T>::emplace_back(Args&&... args)
+    void queue<T>::emplace_back(Args&&... args)
     {       
             static_assert(std::is_constructible_v<T,Args&&...>,
                 "T must be constructible with Args&&...");
@@ -103,7 +100,7 @@
     }
 
     template<typename T>
-    size_t tsfqueue::__impl::lockfree_spsc_unbounded<T>::size(){
+    size_t queue<T>::size(){
         return capacity.load(std::memory_order_relaxed);
     }
 
