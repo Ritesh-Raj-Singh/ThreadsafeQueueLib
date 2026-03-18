@@ -38,7 +38,20 @@ template <typename T> queue<T>::node *queue<T>::get_tail() {}
 template <typename T>
 std::unique_ptr<typename queue<T>::node> queue<T>::wait_and_get() {}
 
-template <typename T> std::unique_ptr<typename queue<T>::node> queue<T>::try_get() {}
+template <typename T> 
+std::unique_ptr<typename queue<T>::node> queue<T>::try_get() {
+    std::lock_guard<std::mutex> guard_head_mutex(head_mutex);
+    if (size() > 0){
+        std::unique_ptr<node> removing_node = std::move(head);
+        head = std::move(removing_node->next);
+
+        std::lock_guard<std::mutex> guard_size_mutex(size_mutex);
+        size_q--;
+
+        return std::move(removing_node);
+    }
+    return nullptr;
+}
 
 template <typename T> void queue<T>::wait_and_pop(T &value) {}
 
