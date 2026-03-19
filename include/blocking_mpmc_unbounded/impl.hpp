@@ -78,6 +78,13 @@ std::unique_ptr<typename queue<T>::node> queue<T>::try_get() {
     return nullptr;
 }
 
+template<typename T>
+size_t size(){
+    std::lock_guard<std::mutex> lock_size(size_mutex);
+
+    return size_q;
+}
+
 template <typename T> void queue<T>::wait_and_pop(T &value) {
     //Obtain the popped_node with the help of wait_and_get()
     std::unique_ptr<node> popped_node = wait_and_get();
