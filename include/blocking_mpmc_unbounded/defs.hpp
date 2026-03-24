@@ -68,6 +68,10 @@ public:
   // Public member functions :
   // Add relevant constructors and destructors -> Add these here only
   blocking_mpmc_unbounded(){
+
+    static_assert(!std::is_reference_v<T>,
+                  "Queue cannot store reference types.");
+
     head = std::make_unique<node>();
     tail = head.get();
     size_q = 0;
@@ -75,6 +79,11 @@ public:
 
   // Implemented an iterative destructor.
   ~blocking_mpmc_unbounded() {
+
+    static_assert(
+        std::is_destructible_v<T>,
+        "Unable to destroy the queue, as the given type is not destructable.");
+
     while(head)
     {
       head = std::move(head->next);
@@ -88,8 +97,7 @@ public:
   // Removed Move constrcutor, because mutexes are not movable.
   blocking_mpmc_unbounded(blocking_mpmc_unbounded&& other) = delete;
   blocking_mpmc_unbounded& operator=(blocking_mpmc_unbounded&& other) = delete;
-  
-  
+
   // 1. void push(value) : Pushes the value inside the queue, copies the value
   void push(T);
 
@@ -112,15 +120,7 @@ public:
   // 6. bool empty() : Returns whether the queue is empty or not at that instant
   bool empty();
 
-  // 7. Add static asserts
-  static_assert(std::is_copy_constructible_<T> || std::is_move_constructible_v<T>,
-  "T must be copyable or movable to be pushed into the queue.");
-
-  static_assert(std::is_copy_assignable_v<T> || std::is_move_assignable_v<T>,
-  "T must be copy-assignable or move-assignable to be popped into a reference.");
-
- static_assert(!std::is_reference_v<T>, 
-              "Queue cannot store reference types.");
+  // 7. Add static asserts (Added in functions which need those.)
 
   // 8. Add emplace_back using perfect forwarding and variadic templates (you
   // can use this in push then)
@@ -132,10 +132,13 @@ public:
 
   // 10. Any more suggestions ??
 
-  // This function will allow us to peek the "head" of queue if it exist.
-  bool peek(T&);
-  std::shared_ptr<T> peek();
-  
+  // This function will allow us to peek the "head" of queue (AT THAT INSTANT,
+  // IT CAN CHANGE NEXT INSTANCE) if it exist. Unsafe for operations like
+  // peeking and checking a condition before pop, as the element might be poped
+  // already and other element might be pushed.
+  bool unsafe_peek(T &);
+  std::shared_ptr<T> unsafe_peek();
+
   // wait_for_get() added to private section.
   bool wait_for_and_pop(T&, std::chrono::milliseconds);
   std::shared_ptr<T> wait_for_and_pop(std::chrono::milliseconds);

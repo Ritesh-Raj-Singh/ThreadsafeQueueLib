@@ -10,26 +10,35 @@ template <typename T>
 using node = tsfqueue::__utils::Node<T>;
 
 template <typename T> void queue<T>::push(T value) {
-    // Create a new tail node.
-    std::unique_ptr<node> new_tail_unique_ptr = std::make_unique<node>();
 
-    // Created the shared pointer of "value" [We use std::move here because its efficient for bulky 'T']
-    std::shared_ptr<T> shared_ptr_for_value = std::make_shared<T>(std::move(value));
+  static_assert(std::is_copy_constructible_<T> ||
+                    std::is_move_constructible_v<T>,
+                "T must be copyable or movable to be pushed into the queue.");
 
-    // Block Producer Thread. [Lock mutex only when needed, so we first do the above two operations]
-    std::lock_guard<std::mutex> guard_tail_mutex(tail_mutex);
+  // Create a new tail node.
+  std::unique_ptr<node> new_tail_unique_ptr = std::make_unique<node>();
 
-    tail->data = std::move(shared_ptr_for_value);
-    tail->next = std::move(new_tail_unique_ptr);
+  // Created the shared pointer of "value" [We use std::move here because its
+  // efficient for bulky 'T']
+  std::shared_ptr<T> shared_ptr_for_value =
+      std::make_shared<T>(std::move(value));
 
-    // Now we move to tail to its next, which is actual tail
-    tail = tail->next.get();
+  // Block Producer Thread. [Lock mutex only when needed, so we first do the
+  // above two operations]
+  std::lock_guard<std::mutex> guard_tail_mutex(tail_mutex);
 
-    {
-        // Increment size
-        std::lock_guard<std::mutex> guard_size_mutex(size_mutex);
-        size_q++;
-    } // added this scope because if we notify a thread before unlocking size_mutex, in 
+  tail->data = std::move(shared_ptr_for_value);
+  tail->next = std::move(new_tail_unique_ptr);
+
+  // Now we move to tail to its next, which is actual tail
+  tail = tail->next.get();
+
+  {
+    // Increment size
+    std::lock_guard<std::mutex> guard_size_mutex(size_mutex);
+    size_q++;
+  } // added this scope because if we notify a thread before unlocking
+    // size_mutex, in 
     //   the wait_and_pop() function we are checking empty() which requires size_mutex.
 
     // Notify any thread (if any) waiting in "wait_and_pop" to wake up and pop.
@@ -86,13 +95,17 @@ size_t queue<T>::size(){
 }
 
 template <typename T> void queue<T>::wait_and_pop(T &value) {
-    //Obtain the popped_node with the help of wait_and_get()
-    std::unique_ptr<node> popped_node = wait_and_get();
 
-    //Move the data into value
-    value = *popped_node->data; // Removed std::move() from here due to dangling pointer issue with peek()
+  static_assert(std::is_copy_assignable_v<T> || std::is_move_assignable_v<T>,
+                "T must be copy-assignable or move-assignable to be popped "
+                "into a reference.");
 
-    return;
+  // Obtain the popped_node with the help of wait_and_get()
+  std::unique_ptr<node> popped_node = wait_and_get();
+
+  // Move the data into value
+  value = *popped_node->data; // Removed std::move() from here due to dangling
+                              // pointer issue with peek()
 }
 
 template <typename T> std::shared_ptr<T> queue<T>::wait_and_pop() {
@@ -106,13 +119,19 @@ template <typename T> std::shared_ptr<T> queue<T>::wait_and_pop() {
 
 template <typename T>
 bool queue<T>::try_pop(T &value) {
-    std::unique_ptr<node> removed_node = try_get();
-    if (removed_node == nullptr){
-        return false;
-    }else{
-        value = *(removed_node->data); // Removed std::move() from here due to dangling pointer issue with peek()
-        return true;
-    }
+
+  static_assert(std::is_copy_assignable_v<T> || std::is_move_assignable_v<T>,
+                "T must be copy-assignable or move-assignable to be popped "
+                "into a reference.");
+
+  std::unique_ptr<node> removed_node = try_get();
+  if (removed_node == nullptr) {
+    return false;
+  } else {
+    value = *(removed_node->data); // Removed std::move() from here due to
+                                   // dangling pointer issue with peek()
+    return true;
+  }
 }
 
 template <typename T>
@@ -156,44 +175,49 @@ void queue<T>::emplace_back(Args&&... args){
     return;
 }
 
-template <typename T>
-bool queue<T>::peek(T& value){
-    // Get exclusive axcess of head.
-    std::lock_guard<std::mutex> guard_head_mutex(head_mutex);
+template <typename T> bool queue<T>::unsafe_peek(T &value) {
 
-    // Get current size.
-    int csize;
-    {
-        std::lock_guard<std::mutex> guard_size_mutex(size_mutex);
-        csize = size_q;
-    }
-    
-    if (csize){
-        // We locked head and current size if >0 -> the size is going to be >0 till we release the head_mutex
-        value = *(head->data);
-        return 1;
-    }
-    return 0;
+  static_assert(std::is_copy_assignable_v<T> || std::is_move_assignable_v<T>,
+                "T must be copy-assignable or move-assignable to be peeked "
+                "into a reference.");
+
+  // Get exclusive axcess of head.
+  std::lock_guard<std::mutex> guard_head_mutex(head_mutex);
+
+  // Get current size.
+  int csize;
+  {
+    std::lock_guard<std::mutex> guard_size_mutex(size_mutex);
+    csize = size_q;
+  }
+
+  if (csize) {
+    // We locked head and current size if >0 -> the size is going to be >0 till
+    // we release the head_mutex
+    value = std::copy(*(head->data));
+    return 1;
+  }
+  return 0;
 }
 
-template <typename T>
-std::shared_ptr<T> queue<T>::peek(){
-    // Get exclusive axcess of head.
-    std::lock_guard<std::mutex> guard_head_mutex(head_mutex);
+template <typename T> std::shared_ptr<T> queue<T>::unsafe_peek() {
+  // Get exclusive axcess of head.
+  std::lock_guard<std::mutex> guard_head_mutex(head_mutex);
 
-    // Get current size.
-    int csize;
-    {
-        std::lock_guard<std::mutex> guard_size_mutex(size_mutex);
-        csize = size_q;
-    }
-    
-    if (csize){
-        // We locked head and current size if >0 -> the size is going to be >0 till we release the head_mutex
-        std::shared_ptr<T> current_head= head->data;
-        return current_head;
-    }
-    return nullptr;
+  // Get current size.
+  int csize;
+  {
+    std::lock_guard<std::mutex> guard_size_mutex(size_mutex);
+    csize = size_q;
+  }
+
+  if (csize) {
+    // We locked head and current size if >0 -> the size is going to be >0 till
+    // we release the head_mutex
+    std::shared_ptr<T> current_head = head->data;
+    return current_head;
+  }
+  return nullptr;
 }
 
 template <typename T>
@@ -239,11 +263,16 @@ std::shared_ptr<T> queue<T>::wait_for_and_pop(std::chrono::milliseconds timeout)
 template <typename T>
 bool queue<T>::wait_for_and_pop(T &value,std::chrono::milliseconds timeout)
 {
-    std::unique_ptr<queue<T>::node> return_node = std::move(wait_for_and_get(timeout));
-    if(return_node == nullptr)
-    {
-        return false;
-    }
+
+  static_assert(std::is_copy_assignable_v<T> || std::is_move_assignable_v<T>,
+                "T must be copy-assignable or move-assignable to be popped "
+                "into a reference.");
+
+  std::unique_ptr<queue<T>::node> return_node =
+      std::move(wait_for_and_get(timeout));
+  if (return_node == nullptr) {
+    return false;
+  }
 
     value = *(return_node->data);
 
