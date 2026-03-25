@@ -107,7 +107,6 @@ bool queue<T, Capacity>::try_pop(T &value)
 template <typename T, size_t Capacity>
 void queue<T, Capacity>::wait_and_pop(T &value)
 {
-  bool done = false;
   static thread_local int spin_threshold = 100;
   const int min_spin = 10, max_spin = 1000;
   int spin = 0;
