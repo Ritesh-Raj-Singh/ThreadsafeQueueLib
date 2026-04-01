@@ -1,5 +1,5 @@
-#include <memory>
-#include <new>
+  #include <memory>
+  #include <new>
 
 namespace tsfqueue::__utils {
 template <typename T> struct Node {
@@ -12,7 +12,7 @@ template <typename T> struct Lockless_Node {
 };
 } // namespace tsfqueue::__utils
 
-namespace tsfq::__impl {
-static constexpr size_t cache_line_size =
-    std::hardware_destructive_interference_size;
-}
+  namespace tsfq::__impl {
+  static constexpr size_t cache_line_size =
+      std::hardware_destructive_interference_size;
+  }
