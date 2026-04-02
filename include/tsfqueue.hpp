@@ -12,4 +12,14 @@
 #include <lockfree_spsc_unbounded_fast/queue.hpp>
 #endif
 
+namespace tsfqueue
+{
+template <typename T>
+using BlockingMPMCUnbounded = impl::blocking_mpmc_unbounded<T>;
+template <typename T, size_t N>
+using SPSCBounded = impl::lockfree_spsc_bounded<T, N>;
+template <typename T> 
+using SPSCUnbounded = impl::lockfree_spsc_unbounded<T>;
+} // namespace tsfqueue
+
 #endif

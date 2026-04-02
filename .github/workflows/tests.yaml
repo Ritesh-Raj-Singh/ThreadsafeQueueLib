@@ -1,0 +1,100 @@
+name: Queue Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    # 🔹 Detect changed files
+    - name: Detect changes
+      id: changes
+      run: |
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          BASE="origin/main"
+          git fetch origin main
+        else
+          BASE="${{ github.event.before }}"
+        fi
+
+        echo "Base: $BASE"
+        echo "Head: ${{ github.sha }}"
+
+        CHANGED_FILES=$(git diff --name-only $BASE ${{ github.sha }})
+
+        echo "Changed files:"
+        echo "$CHANGED_FILES"
+
+        # SPSC (bounded + unbounded)
+        if echo "$CHANGED_FILES" | grep -E "lockfree_spsc"; then
+          echo "run_spsc=true" >> $GITHUB_OUTPUT
+        fi
+
+        # MPSC
+        if echo "$CHANGED_FILES" | grep -E "lockfree_mpsc"; then
+          echo "run_mpsc=true" >> $GITHUB_OUTPUT
+        fi
+
+        # MPMC
+        if echo "$CHANGED_FILES" | grep -E "lockfree_mpmc|blocking_mpmc"; then
+          echo "run_mpmc=true" >> $GITHUB_OUTPUT
+        fi
+
+        # If tests themselves change → run corresponding
+        if echo "$CHANGED_FILES" | grep -E "test_spsc.cpp"; then
+          echo "run_spsc=true" >> $GITHUB_OUTPUT
+        fi
+
+        if echo "$CHANGED_FILES" | grep -E "test_mpsc.cpp"; then
+          echo "run_mpsc=true" >> $GITHUB_OUTPUT
+        fi
+
+        if echo "$CHANGED_FILES" | grep -E "test_mpmc.cpp"; then
+          echo "run_mpmc=true" >> $GITHUB_OUTPUT
+        fi
+
+    # 🔹 Install deps
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake g++ libgtest-dev
+
+    # 🔹 Build GTest
+    - name: Build GTest
+      run: |
+        cd /usr/src/gtest
+        sudo cmake .
+        sudo make
+        sudo cp lib/*.a /usr/lib
+
+    # 🔹 Build project
+    - name: Build project
+      run: |
+        rm -rf build
+        cmake -B build
+        cmake --build build
+
+    # 🔹 Selective tests
+    - name: Run SPSC tests
+      if: steps.changes.outputs.run_spsc == 'true'
+      run: cd build && ./test_spsc
+
+    - name: Run MPSC tests
+      if: steps.changes.outputs.run_mpsc == 'true'
+      run: cd build && ./test_mpsc
+
+    - name: Run MPMC tests
+      if: steps.changes.outputs.run_mpmc == 'true'
+      run: cd build && ./test_mpmc
+
+    # 🔹 Safety net (always runs)
+    # - name: Run full test suite (safety)
+    #   run: cd build && ctest --output-on-failure

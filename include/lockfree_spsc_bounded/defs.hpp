@@ -19,12 +19,12 @@ template <typename T, size_t Capacity> class lockfree_spsc_bounded {
   // among the preferred endpoints as per use case.
 private:
   // Add the private members :
-  alignas(tsfq::__impl::cache_line_size) std::atomic<size_t> head;
-  alignas(tsfq::__impl::cache_line_size) size_t tail_cache;
-  alignas(tsfq::__impl::cache_line_size) std::atomic<size_t> tail;
-  alignas(tsfq::__impl::cache_line_size) size_t head_cache;
+  alignas(cache_line_size) std::atomic<size_t> head;
+  alignas(cache_line_size) size_t tail_cache;
+  alignas(cache_line_size) std::atomic<size_t> tail;
+  alignas(cache_line_size) size_t head_cache;
   static constexpr size_t capacity = Capacity + 1;
-  alignas(tsfq::__impl::cache_line_size) T arr[capacity];
+  alignas(cache_line_size) T arr[capacity];
   // aligned the start of the array too
   // Description of private members :
   // 1. std::atomic<size_t> head is the atomic head pointer
@@ -52,7 +52,7 @@ private:
 
   static_assert(std::atomic<size_t>::is_always_lock_free, "must be lock-free");
 
-  static_assert(alignof(std::atomic<size_t>) <= tsfq::__impl::cache_line_size,
+  static_assert(alignof(std::atomic<size_t>) <= cache_line_size,
                 "cache line size is inefficient");
 
 public:

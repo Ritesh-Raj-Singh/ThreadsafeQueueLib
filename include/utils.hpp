@@ -1,12 +1,15 @@
+#ifndef UTILS
+#define UTILS
+
 #include <memory>
 #include <new>
 
 namespace tsfqueue::impl {
 #ifdef __cpp_lib_hardware_interference_size
-static constexpr size_t cache_line_size =
+inline constexpr size_t cache_line_size =
     std::hardware_destructive_interference_size;
 #else
-static constexpr size_t cache_line_size = 64; // fallback
+inline constexpr size_t cache_line_size = 64; // fallback
 #endif
 } // namespace tsfqueue::impl
 
@@ -20,3 +23,5 @@ template <typename T> struct Lockless_Node {
   std::atomic<Lockless_Node *> next;
 };
 } // namespace tsfqueue::utils
+
+#endif

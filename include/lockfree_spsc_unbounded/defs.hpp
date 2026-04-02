@@ -54,8 +54,8 @@ private:
   // 1. node* head;
   // 2. node* tail;
 
-  alignas(tsfq::impl::cache_line_size) node *head;
-  alignas(tsfq::impl::cache_line_size) node *tail;
+  alignas(cache_line_size) node *head;
+  alignas(cache_line_size) node *tail;
 
   // Description of private members :
   // 1. node* head -> Pointer to the head node
@@ -63,7 +63,7 @@ private:
   // 3. Cache align 1-2
 
   // capacity
-  alignas(tsfq::impl::cache_line_size) std::atomic<size_t> capacity{0};
+  alignas(cache_line_size) std::atomic<size_t> capacity{0};
 
 public:
   // Public member functions :
