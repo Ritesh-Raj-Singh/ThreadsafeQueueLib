@@ -71,11 +71,11 @@ public:
   // 4. bool try_pop(value ref) : Try to pop and return false if failed bool
   bool try_pop(T &);
   // 5. empty(void) : Checks if the queue is empty and return bool
-  bool empty();
+  bool empty() const;
   // 6. bool peek(value ref) : Peek the top of the queue.
   bool peek(T &);
   template <typename... Args> bool emplace_back(Args &&...args);
-  size_t size();
+  size_t size() const;
   // Will work only in SPSC/MPSC why ?? [Reason this]
   // 8. Add emplace_back using perfect forwarding and variadic templates (you
   // can use this in push then)
