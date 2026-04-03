@@ -9,16 +9,16 @@ namespace tsfqueue::impl
   template <typename T, size_t Capacity>
   void lockfree_spsc_bounded<T, Capacity>::wait_and_push(T value)
   {
-    size_t tail_load = tail.load(std::memory_order_relaxed);
-    size_t next_tail = (tail_load + 1) % capacity;
-
+    size_t cur_tail = tail.load(std::memory_order_acquire);
+    size_t next_tail = (cur_tail + 1) % capacity;
+    // size_t curr_head = head.load(std::memory_order_acquire);
     while (next_tail == head_cache)
     {
       head_cache = head.load(std::memory_order_acquire); // busy wait
     }
 
-    arr[tail_load] = std::move(value);
-    tail_cache = next_tail;
+    arr[cur_tail] = std::move(value);
+    // tail_cache = next_tail;
     tail.store(next_tail, std::memory_order_release);
   }
 
@@ -29,71 +29,70 @@ namespace tsfqueue::impl
   }
 
   template <typename T, size_t Capacity>
-  template <typename... Args>
-  bool lockfree_spsc_bounded<T, Capacity>::emplace_back(Args &&...args)
-  {
-    size_t tail_load = tail.load(std::memory_order_relaxed);
-    if ((tail_load + 1) % capacity == head_cache)
-    {
-      head_cache = head.load(std::memory_order_acquire);
-      if ((tail_load + 1) % capacity == head_cache)
-      {
-        return false;
-      }
-    }
-
-    arr[tail_load] = T(std::forward<Args>(args)...);
-    tail_load = (tail_load + 1) % capacity;
-    tail.store(tail_load, std::memory_order_release);
-    return true;
-  }
-
-  template <typename T, size_t Capacity>
   bool lockfree_spsc_bounded<T, Capacity>::try_pop(T &value)
   {
-    size_t head_load = head.load(std::memory_order_relaxed);
-    if (tail_cache == head_load)
+    // cur_tail = tail.load(std::memory_order_acquire);
+    size_t cur_head = head.load(std::memory_order_acquire);
+    if (tail_cache == cur_head)
     {
       tail_cache = tail.load(std::memory_order_acquire);
-      if (tail_cache == head_load)
-      {
+      if (tail_cache == cur_head)
         return false;
-      }
     }
 
-    value = std::move(arr[head_load]);
-    head_load = (head_load + 1) % capacity;
-    head.store(head_load, std::memory_order_release);
+    value = std::move(arr[cur_head]);
+    // head_cache = (cur_head + 1) % capacity;
+    head.store((cur_head + 1) % capacity, std::memory_order_release);
     return true;
   }
 
   template <typename T, size_t Capacity>
   void lockfree_spsc_bounded<T, Capacity>::wait_and_pop(T &value)
   {
-    size_t head_load = head.load(std::memory_order_relaxed);
-    while (head_load == tail_cache)
+    size_t cur_head = head.load(std::memory_order_acquire);
+    while (tail_cache == cur_head)
     {
       tail_cache = tail.load(std::memory_order_acquire); // busy wait
     }
 
-    value = std::move(arr[head_load]);
-    head_load = (head_load + 1) % capacity;
-    head.store(head_load, std::memory_order_release);
+    value = std::move(arr[cur_head]);
+    // head_cache = (cur_head + 1) % capacity;
+    head.store((cur_head + 1) % capacity, std::memory_order_release);
   }
 
   template <typename T, size_t Capacity>
   bool lockfree_spsc_bounded<T, Capacity>::peek(T &value)
   {
-    size_t head_load = head.load(std::memory_order_relaxed);
-    if (head_load == tail_cache)
+    size_t cur_head = head.load(std::memory_order_acquire);
+    if (cur_head == tail_cache)
     {
       tail_cache = tail.load(std::memory_order_acquire);
-      if (head_load == tail_cache)
+      if (cur_head == tail_cache)
       {
         return false;
       }
     }
-    value = arr[head_load];
+    value = arr[cur_head];
+    return true;
+  }
+
+  template <typename T, size_t Capacity>
+  template <typename... Args>
+  bool lockfree_spsc_bounded<T, Capacity>::emplace_back(Args &&...args)
+  {
+    size_t cur_tail = tail.load(std::memory_order_acquire);
+    size_t next_tail = (cur_tail + 1) % capacity;
+    if (next_tail == head_cache)
+    {
+      head_cache = head.load(std::memory_order_acquire);
+      if (next_tail == head_cache)
+      {
+        return false;
+      }
+    }
+    arr[cur_tail] = T(std::forward<Args>(args)...);
+    // tail_cache = next_tail;
+    tail.store(next_tail, std::memory_order_release);
     return true;
   }
 
