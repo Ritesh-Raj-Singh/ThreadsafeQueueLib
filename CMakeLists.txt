@@ -4,20 +4,28 @@ project(ThreadsafeQueueLib)
 set(CMAKE_CXX_STANDARD 17)
 enable_testing()
 
+find_package(Threads REQUIRED)
 find_package(GTest REQUIRED)
 include_directories(include)
 
+option(ENABLE_TSAN "Enable ThreadSanitizer" OFF)
+
+if(ENABLE_TSAN)
+    add_compile_options(-fsanitize=thread -g -O1)
+    add_link_options(-fsanitize=thread)
+endif()
+
 # SPSC tests
 add_executable(test_spsc tests/test_spsc.cpp)
-target_link_libraries(test_spsc GTest::GTest GTest::Main pthread)
+target_link_libraries(test_spsc GTest::GTest GTest::Main Threads::Threads)
 
 # MPSC tests
 add_executable(test_mpsc tests/test_mpsc.cpp)
-target_link_libraries(test_mpsc GTest::GTest GTest::Main pthread)
+target_link_libraries(test_mpsc GTest::GTest GTest::Main Threads::Threads)
 
 # MPMC tests
 add_executable(test_mpmc tests/test_mpmc.cpp)
-target_link_libraries(test_mpmc GTest::GTest GTest::Main pthread)
+target_link_libraries(test_mpmc GTest::GTest GTest::Main Threads::Threads)
 
 # Register tests
 add_test(NAME SPSC COMMAND test_spsc)
