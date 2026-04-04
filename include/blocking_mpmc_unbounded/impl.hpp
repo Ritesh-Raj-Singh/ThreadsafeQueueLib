@@ -44,7 +44,8 @@ template <typename T> void blocking_mpmc_unbounded<T>::push(T value) {
 }
 
 template <typename T>
-std::unique_ptr<typename blocking_mpmc_unbounded<T>::node> blocking_mpmc_unbounded<T>::wait_and_get() {
+std::unique_ptr<typename blocking_mpmc_unbounded<T>::node>
+blocking_mpmc_unbounded<T>::wait_and_get() {
   // Locking the head mutex
   std::unique_lock<std::mutex> head_lock(head_mutex);
 
@@ -65,7 +66,8 @@ std::unique_ptr<typename blocking_mpmc_unbounded<T>::node> blocking_mpmc_unbound
 }
 
 template <typename T>
-std::unique_ptr<typename blocking_mpmc_unbounded<T>::node> blocking_mpmc_unbounded<T>::try_get() {
+std::unique_ptr<typename blocking_mpmc_unbounded<T>::node>
+blocking_mpmc_unbounded<T>::try_get() {
   std::lock_guard<std::mutex> guard_head_mutex(head_mutex);
   if (size() > 0) {
     std::unique_ptr<node> removing_node = std::move(head);
@@ -216,7 +218,8 @@ std::shared_ptr<T> blocking_mpmc_unbounded<T>::unsafe_peek() {
 }
 
 template <typename T>
-std::unique_ptr<typename blocking_mpmc_unbounded<T>::node> blocking_mpmc_unbounded<T>::wait_for_and_get(
+std::unique_ptr<typename blocking_mpmc_unbounded<T>::node>
+blocking_mpmc_unbounded<T>::wait_for_and_get(
     std::chrono::milliseconds timeout) {
   // Using unique_lock to lock and unlock on our will.
   std::unique_lock<std::mutex> lock_head(head_mutex);
