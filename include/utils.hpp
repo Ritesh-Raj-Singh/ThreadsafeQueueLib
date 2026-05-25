@@ -4,6 +4,11 @@
 #include <memory>
 #include <new>
 
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winterference-size"
+#endif
+
 namespace tsfqueue::impl {
 #ifdef __cpp_lib_hardware_interference_size
 inline constexpr size_t cache_line_size =
@@ -12,6 +17,10 @@ inline constexpr size_t cache_line_size =
 inline constexpr size_t cache_line_size = 64; // fallback
 #endif
 } // namespace tsfqueue::impl
+
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
 namespace tsfqueue::utils {
 template <typename T> struct Node {

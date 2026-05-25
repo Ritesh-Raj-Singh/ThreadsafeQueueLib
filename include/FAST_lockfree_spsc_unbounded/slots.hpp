@@ -36,6 +36,51 @@ public:
         ;
   }
 };
+#else
+#include <mutex>
+#include <condition_variable>
+#include <cassert>
+class Semaphore_FAST {
+private:
+  std::mutex mtx;
+  std::condition_variable cv;
+  int count;
+
+public:
+  Semaphore_FAST(int count_ = 0) : count(count_) { assert(count >= 0); }
+  bool try_get() {
+    std::lock_guard<std::mutex> lock(mtx);
+    if (count > 0) {
+      count--;
+      return true;
+    }
+    return false;
+  }
+  bool timed_get(std::uint64_t time_usecs) {
+    std::unique_lock<std::mutex> lock(mtx);
+    return cv.wait_for(lock, std::chrono::microseconds(time_usecs), [this]() {
+      if (count > 0) {
+        count--;
+        return true;
+      }
+      return false;
+    });
+  }
+  void wait_and_get() {
+    std::unique_lock<std::mutex> lock(mtx);
+    cv.wait(lock, [this]() { return count > 0; });
+    count--;
+  }
+  void signal(int times = 1) {
+    std::lock_guard<std::mutex> lock(mtx);
+    count += times;
+    if (times > 1) {
+      cv.notify_all();
+    } else {
+      cv.notify_one();
+    }
+  }
+};
 #endif
 
 class Slot_FAST {
@@ -58,7 +103,8 @@ private:
       return true;
     counter.fetch_sub(1);
     if (time_usecs < 0) {
-      sema.wait_and_get() return true;
+      sema.wait_and_get();
+      return true;
     }
     if (sema.timed_get(static_cast<std::uint64_t>(time_usecs))) {
       return true;
@@ -90,13 +136,13 @@ public:
     return false;
   }
   bool timed_get(std::int64_t time_usecs) { return get_with_sleep(time_usecs); }
-  void wait_and_get() { return get_with_sleep(); }
+  void wait_and_get() { get_with_sleep(); }
   void signal(int times = 1) {
     int old = counter.fetch_add(1);
     if (old < 0)
       sema.signal();
   }
-}
-}; // namespace tsfqueue::FAST
+};
+} // namespace tsfqueue::FAST
 
 #endif

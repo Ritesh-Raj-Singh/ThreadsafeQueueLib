@@ -1,0 +1,111 @@
+Start testing: May 25 13:13 IST
+----------------------------------------------------------
+1/3 Testing: SPSC
+1/3 Test: SPSC
+Command: "/home/ritesh/Documents/Code/C++/ThreadsafeQueue/TeamB/ThreadsafeQueueLib/build/test_spsc"
+Directory: /home/ritesh/Documents/Code/C++/ThreadsafeQueue/TeamB/ThreadsafeQueueLib/build
+"SPSC" start time: May 25 13:13 IST
+Output:
+----------------------------------------------------------
+Running main() from ./googletest/src/gtest_main.cc
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from SPSCQueue
+[ RUN      ] SPSCQueue.BasicPushPop_Bounded
+[       OK ] SPSCQueue.BasicPushPop_Bounded (0 ms)
+[ RUN      ] SPSCQueue.BasicPushPop_Unbounded
+[       OK ] SPSCQueue.BasicPushPop_Unbounded (0 ms)
+[ RUN      ] SPSCQueue.BasicPushPop_Fast
+[       OK ] SPSCQueue.BasicPushPop_Fast (0 ms)
+[ RUN      ] SPSCQueue.DataRaceStressTest_Bounded
+[       OK ] SPSCQueue.DataRaceStressTest_Bounded (18 ms)
+[ RUN      ] SPSCQueue.DataRaceStressTest_Unbounded
+[       OK ] SPSCQueue.DataRaceStressTest_Unbounded (35 ms)
+[ RUN      ] SPSCQueue.EmplaceBackEfficiency_Bounded
+[       OK ] SPSCQueue.EmplaceBackEfficiency_Bounded (0 ms)
+[ RUN      ] SPSCQueue.EmplaceBackEfficiency_Unbounded
+[       OK ] SPSCQueue.EmplaceBackEfficiency_Unbounded (0 ms)
+[ RUN      ] SPSCQueue.StaticRequirementsValidation
+[       OK ] SPSCQueue.StaticRequirementsValidation (0 ms)
+[----------] 8 tests from SPSCQueue (53 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (53 ms total)
+[  PASSED  ] 8 tests.
+<end of output>
+Test time =   0.06 sec
+----------------------------------------------------------
+Test Passed.
+"SPSC" end time: May 25 13:13 IST
+"SPSC" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/3 Testing: MPSC
+2/3 Test: MPSC
+Command: "/home/ritesh/Documents/Code/C++/ThreadsafeQueue/TeamB/ThreadsafeQueueLib/build/test_mpsc"
+Directory: /home/ritesh/Documents/Code/C++/ThreadsafeQueue/TeamB/ThreadsafeQueueLib/build
+"MPSC" start time: May 25 13:13 IST
+Output:
+----------------------------------------------------------
+Running main() from ./googletest/src/gtest_main.cc
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from MPSCQueue
+[ RUN      ] MPSCQueue.BasicPushPop_Unbounded
+[       OK ] MPSCQueue.BasicPushPop_Unbounded (0 ms)
+[ RUN      ] MPSCQueue.DataRaceStressTest_Unbounded
+[       OK ] MPSCQueue.DataRaceStressTest_Unbounded (18 ms)
+[----------] 2 tests from MPSCQueue (18 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (18 ms total)
+[  PASSED  ] 2 tests.
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"MPSC" end time: May 25 13:13 IST
+"MPSC" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/3 Testing: MPMC
+3/3 Test: MPMC
+Command: "/home/ritesh/Documents/Code/C++/ThreadsafeQueue/TeamB/ThreadsafeQueueLib/build/test_mpmc"
+Directory: /home/ritesh/Documents/Code/C++/ThreadsafeQueue/TeamB/ThreadsafeQueueLib/build
+"MPMC" start time: May 25 13:13 IST
+Output:
+----------------------------------------------------------
+Running main() from ./googletest/src/gtest_main.cc
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from MPMCQueue
+[ RUN      ] MPMCQueue.BasicPushPop_Unbounded
+[       OK ] MPMCQueue.BasicPushPop_Unbounded (0 ms)
+[ RUN      ] MPMCQueue.WaitFor_isTimeExact
+[       OK ] MPMCQueue.WaitFor_isTimeExact (200 ms)
+[ RUN      ] MPMCQueue.WaitForTester
+[       OK ] MPMCQueue.WaitForTester (2000 ms)
+[ RUN      ] MPMCQueue.DataRaceStressTest
+[       OK ] MPMCQueue.DataRaceStressTest (20 ms)
+[ RUN      ] MPMCQueue.EmplaceBackEfficiency_and_StaticAsserts
+[       OK ] MPMCQueue.EmplaceBackEfficiency_and_StaticAsserts (0 ms)
+[ RUN      ] MPMCQueue.StaticRequirementsValidation
+[       OK ] MPMCQueue.StaticRequirementsValidation (0 ms)
+[ RUN      ] MPMCQueue.BasicPushPop_Bounded
+[       OK ] MPMCQueue.BasicPushPop_Bounded (0 ms)
+[ RUN      ] MPMCQueue.DataRaceStressTest_Bounded
+[       OK ] MPMCQueue.DataRaceStressTest_Bounded (4 ms)
+[----------] 8 tests from MPMCQueue (2225 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (2225 ms total)
+[  PASSED  ] 8 tests.
+<end of output>
+Test time =   2.23 sec
+----------------------------------------------------------
+Test Passed.
+"MPMC" end time: May 25 13:13 IST
+"MPMC" time elapsed: 00:00:02
+----------------------------------------------------------
+
+End testing: May 25 13:13 IST

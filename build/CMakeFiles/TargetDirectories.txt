@@ -1,0 +1,6 @@
+/home/ritesh/Documents/Code/C++/ThreadsafeQueue/TeamB/ThreadsafeQueueLib/build/CMakeFiles/test_spsc.dir
+/home/ritesh/Documents/Code/C++/ThreadsafeQueue/TeamB/ThreadsafeQueueLib/build/CMakeFiles/test_mpsc.dir
+/home/ritesh/Documents/Code/C++/ThreadsafeQueue/TeamB/ThreadsafeQueueLib/build/CMakeFiles/test_mpmc.dir
+/home/ritesh/Documents/Code/C++/ThreadsafeQueue/TeamB/ThreadsafeQueueLib/build/CMakeFiles/test.dir
+/home/ritesh/Documents/Code/C++/ThreadsafeQueue/TeamB/ThreadsafeQueueLib/build/CMakeFiles/edit_cache.dir
+/home/ritesh/Documents/Code/C++/ThreadsafeQueue/TeamB/ThreadsafeQueueLib/build/CMakeFiles/rebuild_cache.dir

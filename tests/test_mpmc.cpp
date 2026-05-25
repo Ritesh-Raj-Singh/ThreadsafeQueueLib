@@ -226,3 +226,62 @@ TEST(MPMCQueue, StaticRequirementsValidation) {
   EXPECT_FALSE(locked_type_assignable)
       << "LockedType should fail the assignability requirement.";
 }
+
+// Bounded Tests
+TEST(MPMCQueue, BasicPushPop_Bounded) {
+  tsfqueue::MPMCBounded<int, 4> q;
+
+  EXPECT_TRUE(q.empty());
+
+  q.push(1);
+  q.push(2);
+
+  int x;
+  EXPECT_TRUE(q.try_pop(x));
+  EXPECT_EQ(x, 1);
+
+  EXPECT_TRUE(q.try_pop(x));
+  EXPECT_EQ(x, 2);
+
+  EXPECT_TRUE(q.empty());
+}
+
+TEST(MPMCQueue, DataRaceStressTest_Bounded) {
+  tsfqueue::MPMCBounded<int, 1024> q;
+  const int num_threads = 8;
+  const int ops_per_thread = 1000;
+  std::atomic<int> total_popped{0};
+  std::vector<std::thread> producers;
+  std::vector<std::thread> consumers;
+
+  // Launch Producers
+  for (int i = 0; i < num_threads; ++i) {
+    producers.emplace_back([&q, ops_per_thread]() {
+      for (int j = 0; j < ops_per_thread; ++j) {
+        q.push(j);
+      }
+    });
+  }
+
+  // Launch Consumers
+  for (int i = 0; i < num_threads; ++i) {
+    consumers.emplace_back([&q, ops_per_thread, &total_popped]() {
+      for (int j = 0; j < ops_per_thread; ++j) {
+        int val;
+        // Busy wait pop
+        while (!q.try_pop(val)) {
+            std::this_thread::yield();
+        }
+        total_popped++;
+      }
+    });
+  }
+
+  for (auto &t : producers)
+    t.join();
+  for (auto &t : consumers)
+    t.join();
+
+  EXPECT_EQ(total_popped.load(), num_threads * ops_per_thread);
+  EXPECT_TRUE(q.empty());
+}

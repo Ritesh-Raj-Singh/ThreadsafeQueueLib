@@ -7,17 +7,21 @@
 #include <lockfree_spsc_bounded/queue.hpp>
 #include <lockfree_spsc_unbounded/queue.hpp>
 
-// #define FAST
-#ifdef FAST
-#include <lockfree_spsc_unbounded_fast/queue.hpp>
+#define USE_FAST_SPSC_QUEUE
+#ifdef USE_FAST_SPSC_QUEUE
+#include <FAST_lockfree_spsc_unbounded/queue.hpp>
 #endif
 
 namespace tsfqueue {
 template <typename T>
 using BlockingMPMCUnbounded = impl::blocking_mpmc_unbounded<T>;
 template <typename T, size_t N>
+using MPMCBounded = impl::lockfree_mpmc_bounded<T, N>;
+template <typename T, size_t N>
 using SPSCBounded = impl::lockfree_spsc_bounded<T, N>;
 template <typename T> using SPSCUnbounded = impl::lockfree_spsc_unbounded<T>;
+template <typename T> using FastSPSCUnbounded = impl::fast_lockfree_spsc_unbounded<T>;
+template <typename T> using MPSCUnbounded = impl::lockfree_mpsc_unbounded<T>;
 } // namespace tsfqueue
 
 #endif
