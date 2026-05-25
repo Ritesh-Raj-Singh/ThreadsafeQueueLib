@@ -19,9 +19,12 @@ template <typename T, size_t N>
 using MPMCBounded = impl::lockfree_mpmc_bounded<T, N>;
 template <typename T, size_t N>
 using SPSCBounded = impl::lockfree_spsc_bounded<T, N>;
-template <typename T> using SPSCUnbounded = impl::lockfree_spsc_unbounded<T>;
-template <typename T> using FastSPSCUnbounded = impl::fast_lockfree_spsc_unbounded<T>;
-template <typename T> using MPSCUnbounded = impl::lockfree_mpsc_unbounded<T>;
+template <typename T>
+using SPSCUnbounded = impl::lockfree_spsc_unbounded<T>;
+template <typename T>
+using FastSPSCUnbounded = impl::fast_lockfree_spsc_unbounded<T>;
+template <typename T>
+using MPSCUnbounded = impl::lockfree_mpsc_unbounded<T>;
 } // namespace tsfqueue
 
 #endif
