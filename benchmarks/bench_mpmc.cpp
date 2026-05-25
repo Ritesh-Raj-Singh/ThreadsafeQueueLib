@@ -4,6 +4,7 @@
 #include <atomic>
 #include "tsfqueue.hpp"
 #include "bench_utils.hpp"
+#include "concurrentqueue.h"
 
 template <typename Queue>
 static void BM_MPMC(benchmark::State& state) {
@@ -29,7 +30,8 @@ static void BM_MPMC(benchmark::State& state) {
             consumers.emplace_back([&q, &total_popped, total_ops]() {
                 while (total_popped.load(std::memory_order_relaxed) < total_ops) {
                     int val;
-                    if (q.try_pop(val)) {
+                    if (dequeue(q, val)) {
+                        benchmark::DoNotOptimize(val);
                         total_popped.fetch_add(1, std::memory_order_relaxed);
                     } else {
                         std::this_thread::yield();
@@ -53,5 +55,10 @@ static void BM_MPMC_BlockingMPMCUnbounded(benchmark::State& state) {
     BM_MPMC<tsfqueue::BlockingMPMCUnbounded<int>>(state);
 }
 BENCHMARK(BM_MPMC_BlockingMPMCUnbounded)->Arg(1)->Arg(2)->Arg(4)->Arg(8)->UseRealTime();
+
+static void BM_MoodycamelMPMC(benchmark::State& state) {
+    BM_MPMC<moodycamel::ConcurrentQueue<int>>(state);
+}
+BENCHMARK(BM_MoodycamelMPMC)->Arg(1)->Arg(2)->Arg(4)->Arg(8)->UseRealTime();
 
 BENCHMARK_MAIN();

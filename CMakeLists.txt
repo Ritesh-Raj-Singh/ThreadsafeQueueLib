@@ -26,6 +26,37 @@ set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Disable benchmark testing" FORCE)
 set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE BOOL "Disable benchmark testing" FORCE)
 FetchContent_MakeAvailable(benchmark)
 
+# Moodycamel ReaderWriterQueue
+FetchContent_Declare(
+  readerwriterqueue
+  GIT_REPOSITORY https://github.com/cameron314/readerwriterqueue.git
+  GIT_TAG master
+)
+FetchContent_MakeAvailable(readerwriterqueue)
+
+# Moodycamel ConcurrentQueue
+FetchContent_Declare(
+  concurrentqueue
+  GIT_REPOSITORY https://github.com/cameron314/concurrentqueue.git
+  GIT_TAG master
+)
+FetchContent_MakeAvailable(concurrentqueue)
+
+# Rigtorp SPSCQueue
+FetchContent_Declare(
+  rigtorpspsc
+  GIT_REPOSITORY https://github.com/rigtorp/SPSCQueue.git
+  GIT_TAG master
+)
+FetchContent_MakeAvailable(rigtorpspsc)
+
+# Include dirs for third-party headers
+include_directories(
+  ${readerwriterqueue_SOURCE_DIR}
+  ${concurrentqueue_SOURCE_DIR}
+  ${rigtorpspsc_SOURCE_DIR}/include
+)
+
 # SPSC tests
 add_executable(test_spsc tests/test_spsc.cpp)
 target_link_libraries(test_spsc GTest::GTest GTest::Main Threads::Threads)

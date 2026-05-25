@@ -4,6 +4,7 @@
 #include <atomic>
 #include "tsfqueue.hpp"
 #include "bench_utils.hpp"
+#include "concurrentqueue.h"
 
 template <typename Queue>
 static void BM_MPSC(benchmark::State& state) {
@@ -25,7 +26,8 @@ static void BM_MPSC(benchmark::State& state) {
         std::thread consumer([&q, total_ops]() {
             for (int i = 0; i < total_ops; ++i) {
                 int val;
-                while (!q.try_pop(val)) { std::this_thread::yield(); }
+                while (!dequeue(q, val)) { std::this_thread::yield(); }
+                benchmark::DoNotOptimize(val);
             }
         });
 
@@ -50,5 +52,10 @@ static void BM_MPSC_BlockingMPMCUnbounded(benchmark::State& state) {
     BM_MPSC<tsfqueue::BlockingMPMCUnbounded<int>>(state);
 }
 BENCHMARK(BM_MPSC_BlockingMPMCUnbounded)->Arg(1)->Arg(2)->Arg(4)->Arg(8)->UseRealTime();
+
+static void BM_MoodycamelMPSC(benchmark::State& state) {
+    BM_MPSC<moodycamel::ConcurrentQueue<int>>(state);
+}
+BENCHMARK(BM_MoodycamelMPSC)->Arg(1)->Arg(2)->Arg(4)->Arg(8)->UseRealTime();
 
 BENCHMARK_MAIN();

@@ -100,17 +100,41 @@ If you wish to test a specific queue configuration, you can execute the compiled
 
 ## Benchmark Results
 
-The library uses **Google Benchmark** to accurately measure queue throughput (Operations Per Second). You can run the benchmarks yourself after building:
+Throughput was measured using **Google Benchmark** compiled in Release mode (`-O3`), with loops instrumented to prevent compiler elision. 
+
+To reproduce these benchmarks locally:
 ```bash
-./bench_spsc
-./bench_mpsc
-./bench_mpmc
+mkdir -p build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j$(nproc)
+./bench_spsc && ./bench_mpsc && ./bench_mpmc
 ```
 
-**Key Findings:**
-- **SPSC Bounded**: Achieves **~15.6 Million ops/sec**, providing extreme speed with zero memory allocation overhead.
-- **MPSC Unbounded**: Phenomenal scaling; throughput *increases* under contention (from 3.0M ops/sec with 1 producer to **6.1M ops/sec** with 8 producers) due to efficient atomic tail swaps.
-- **MPMC Bounded**: Sustains robust throughput (**8.9M ops/sec** 1v1, **2.6M ops/sec** under brutal 8v8 contention), easily outperforming traditional mutex-based queues which struggle to exceed 1M ops/sec.
+### SPSC (Single Producer, Single Consumer)
+Comparison of bounded and unbounded SPSC implementations.
+
+| Implementation | Type | Ops/Sec |
+| :--- | :--- | :--- |
+| `rigtorp::SPSCQueue` | Bounded | ~198.7 M |
+| `tsfqueue::SPSCBounded` | Bounded | ~121.3 M |
+| `moodycamel::ReaderWriterQueue` | Unbounded | ~31.6 M |
+| `tsfqueue::FastSPSCUnbounded` | Unbounded (Chunked) | ~11.6 M |
+| `tsfqueue::SPSCUnbounded` | Unbounded (Node) | ~4.7 M |
+
+### MPSC (Multi-Producer, Single Consumer)
+Throughput measured under varying thread contention (1 to 8 concurrent producers).
+
+| Implementation | Ops/Sec (1 Producer) | Ops/Sec (8 Producers) |
+| :--- | :--- | :--- |
+| `tsfqueue::MPSCUnbounded` | 3.6 M | 7.5 M |
+| `moodycamel::ConcurrentQueue` | 3.4 M | 4.4 M |
+
+### MPMC (Multi-Producer, Multi-Consumer)
+Throughput measured under varying thread contention (1v1 up to 8v8 threads).
+
+| Implementation | Ops/Sec (1v1) | Ops/Sec (8v8) |
+| :--- | :--- | :--- |
+
 
 ---
 
