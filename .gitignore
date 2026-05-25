@@ -1,0 +1,5 @@
+.gitignore
+compile_commands.json
+build/
+.cache/
+.DS_Store
