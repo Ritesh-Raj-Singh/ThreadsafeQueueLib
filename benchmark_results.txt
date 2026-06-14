@@ -1,0 +1,57 @@
+-------------------------------------------------------------------------------------------------
+Benchmark                                       Time             CPU   Iterations UserCounters...
+-------------------------------------------------------------------------------------------------
+BM_SPSCBounded/1000/real_time               59193 ns        38079 ns         8981 items_per_second=16.894M/s
+BM_SPSCBounded/10000/real_time             137643 ns        42948 ns         6386 items_per_second=72.6515M/s
+BM_SPSCBounded/100000/real_time           1228853 ns        81025 ns          777 items_per_second=81.3767M/s
+BM_SPSCBounded/1000000/real_time          8816660 ns       104539 ns          102 items_per_second=113.422M/s
+BM_SPSCUnbounded/1000/real_time            299653 ns        53353 ns         1997 items_per_second=3.3372M/s
+BM_SPSCUnbounded/10000/real_time          3245130 ns        66598 ns          223 items_per_second=3.08154M/s
+BM_SPSCUnbounded/100000/real_time        25931518 ns        66570 ns           27 items_per_second=3.85631M/s
+BM_SPSCUnbounded/1000000/real_time      190740201 ns       100060 ns            3 items_per_second=5.24273M/s
+BM_FastSPSCUnbounded/1000/real_time         77653 ns        41293 ns         7179 items_per_second=12.8778M/s
+BM_FastSPSCUnbounded/10000/real_time      1919053 ns        82357 ns          516 items_per_second=5.2109M/s
+BM_FastSPSCUnbounded/100000/real_time    17313739 ns       118524 ns           40 items_per_second=5.77576M/s
+BM_FastSPSCUnbounded/1000000/real_time  105656055 ns       160740 ns           10 items_per_second=9.46467M/s
+BM_MoodycamelSPSC/1000/real_time           109061 ns        44572 ns         6831 items_per_second=9.16922M/s
+BM_MoodycamelSPSC/10000/real_time          626703 ns        58002 ns         1000 items_per_second=15.9565M/s
+BM_MoodycamelSPSC/100000/real_time        6058704 ns       113837 ns          112 items_per_second=16.5052M/s
+BM_MoodycamelSPSC/1000000/real_time      35172075 ns       111428 ns           20 items_per_second=28.4316M/s
+BM_RigtorpSPSC/1000/real_time               56577 ns        39594 ns         8935 items_per_second=17.6749M/s
+BM_RigtorpSPSC/10000/real_time              84845 ns        44006 ns         7697 items_per_second=117.862M/s
+BM_RigtorpSPSC/100000/real_time            577491 ns        63926 ns         1701 items_per_second=173.163M/s
+BM_RigtorpSPSC/1000000/real_time          5373456 ns       102335 ns          127 items_per_second=186.1M/s
+----------------------------------------------------------------------------------------------------
+Benchmark                                          Time             CPU   Iterations UserCounters...
+----------------------------------------------------------------------------------------------------
+BM_MPSC_MPMCBounded/1/real_time              4704957 ns       308712 ns          152 items_per_second=21.2542M/s
+BM_MPSC_MPMCBounded/2/real_time             31006085 ns       281808 ns           22 items_per_second=6.45035M/s
+BM_MPSC_MPMCBounded/4/real_time             83637959 ns       530006 ns            8 items_per_second=4.78252M/s
+BM_MPSC_MPMCBounded/8/real_time            162027647 ns       627481 ns            4 items_per_second=4.93743M/s
+BM_MPSC_MPSCUnbounded/1/real_time           27645693 ns       146373 ns           27 items_per_second=3.6172M/s
+BM_MPSC_MPSCUnbounded/2/real_time           40281109 ns       101063 ns           17 items_per_second=4.96511M/s
+BM_MPSC_MPSCUnbounded/4/real_time           52080155 ns       247385 ns           12 items_per_second=7.68047M/s
+BM_MPSC_MPSCUnbounded/8/real_time           91756668 ns       498982 ns            7 items_per_second=8.71871M/s
+BM_MPSC_BlockingMPMCUnbounded/1/real_time   66090361 ns        88383 ns           11 items_per_second=1.51308M/s
+BM_MPSC_BlockingMPMCUnbounded/2/real_time  135210715 ns       195968 ns            5 items_per_second=1.47917M/s
+BM_MPSC_BlockingMPMCUnbounded/4/real_time  252331595 ns       252404 ns            2 items_per_second=1.58522M/s
+BM_MPSC_BlockingMPMCUnbounded/8/real_time  649397958 ns       534642 ns            1 items_per_second=1.23191M/s
+BM_MoodycamelMPSC/1/real_time               10908513 ns       140992 ns           58 items_per_second=9.16715M/s
+BM_MoodycamelMPSC/2/real_time               31896183 ns       169216 ns           21 items_per_second=6.27034M/s
+BM_MoodycamelMPSC/4/real_time               40078335 ns       243145 ns           16 items_per_second=9.98045M/s
+BM_MoodycamelMPSC/8/real_time              112897714 ns       463818 ns            7 items_per_second=7.08606M/s
+----------------------------------------------------------------------------------------------------
+Benchmark                                          Time             CPU   Iterations UserCounters...
+----------------------------------------------------------------------------------------------------
+BM_MPMC_MPMCBounded/1/real_time              5003194 ns       393218 ns          157 items_per_second=19.9872M/s
+BM_MPMC_MPMCBounded/2/real_time             32263814 ns       335816 ns           22 items_per_second=6.1989M/s
+BM_MPMC_MPMCBounded/4/real_time             98453044 ns       855740 ns            7 items_per_second=4.06285M/s
+BM_MPMC_MPMCBounded/8/real_time            258281467 ns      1013551 ns            2 items_per_second=3.0974M/s
+BM_MPMC_BlockingMPMCUnbounded/1/real_time   61916021 ns        94430 ns           14 items_per_second=1.61509M/s
+BM_MPMC_BlockingMPMCUnbounded/2/real_time  125475701 ns       124637 ns            5 items_per_second=1.59393M/s
+BM_MPMC_BlockingMPMCUnbounded/4/real_time  290664179 ns       501092 ns            2 items_per_second=1.37616M/s
+BM_MPMC_BlockingMPMCUnbounded/8/real_time  677162016 ns      1082899 ns            1 items_per_second=1.1814M/s
+BM_MoodycamelMPMC/1/real_time               13284821 ns       130428 ns           75 items_per_second=7.52739M/s
+BM_MoodycamelMPMC/2/real_time               51269499 ns       147341 ns           10 items_per_second=3.90095M/s
+BM_MoodycamelMPMC/4/real_time               76689676 ns       585059 ns            9 items_per_second=5.21583M/s
+BM_MoodycamelMPMC/8/real_time              225209156 ns       840076 ns            4 items_per_second=3.55225M/s
